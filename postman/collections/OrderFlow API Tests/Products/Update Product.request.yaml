@@ -1,0 +1,101 @@
+$kind: http-request
+url: "{{baseUrl}}/api/products/{{productId}}"
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"name\": \"Postman Test Laptop Updated\",\r
+
+    \    \"description\": \"Product updated using Postman automated API test\",\r
+
+    \    \"price\": 1399.99,\r
+
+    \    \"stockQuantity\": 10,\r
+
+    \    \"category\": \"Electronics\",\r
+
+    \    \"active\": true\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 200\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Response is JSON\", function () {\r
+
+      \    pm.response.to.be.json;\r
+
+      });\r
+
+      \r
+
+      const response = pm.response.json();\r
+
+      \r
+
+      pm.test(\"Product ID is unchanged\", function () {\r
+
+      \    pm.expect(response.id.toString())\r
+
+      \        .to.eql(pm.environment.get(\"productId\").toString());\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Product name was updated\", function () {\r
+
+      \    pm.expect(response.name)\r
+
+      \        .to.eql(\"Postman Test Laptop Updated\");\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Product price was updated\", function () {\r
+
+      \    pm.expect(response.price)\r
+
+      \        .to.eql(1399.99);\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Stock quantity was updated\", function () {\r
+
+      \    pm.expect(response.stockQuantity)\r
+
+      \        .to.eql(10);\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Category is correct\", function () {\r
+
+      \    pm.expect(response.category)\r
+
+      \        .to.eql(\"Electronics\");\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Product remains active\", function () {\r
+
+      \    pm.expect(response.active)\r
+
+      \        .to.eql(true);\r
+
+      });"
+    language: text/javascript
+order: 4290104407402005

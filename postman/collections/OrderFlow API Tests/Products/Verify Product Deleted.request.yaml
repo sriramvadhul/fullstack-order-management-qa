@@ -1,0 +1,46 @@
+$kind: http-request
+url: "{{baseUrl}}/api/products/{{productId}}"
+method: GET
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 404\", function () {\r
+
+      \    pm.response.to.have.status(404);\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Response is JSON\", function () {\r
+
+      \    pm.response.to.be.json;\r
+
+      });\r
+
+      \r
+
+      const response = pm.response.json();\r
+
+      \r
+
+      pm.test(\"Error is Not Found\", function () {\r
+
+      \    pm.expect(response.error).to.eql(\"Not Found\");\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Error message contains product ID\", function () {\r
+
+      \    const productId = pm.environment.get(\"productId\");\r
+
+      \r
+
+      \    pm.expect(response.message)\r
+
+      \        .to.include(productId.toString());\r
+
+      });"
+    language: text/javascript
+order: 4440056662393498

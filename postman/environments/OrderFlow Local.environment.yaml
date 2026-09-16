@@ -1,0 +1,6 @@
+name: OrderFlow Local
+values:
+  - key: baseUrl
+    value: ''
+  - key: productId
+    value: ''

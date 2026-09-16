@@ -1,0 +1,87 @@
+$kind: http-request
+url: "{{baseUrl}}/api/products"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"description\": \"Invalid product for negative testing\",\r
+
+    \    \"stockQuantity\": -10,\r
+
+    \    \"category\": \"\",\r
+
+    \    \"active\": true\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 400\", function () {\r
+
+      \    pm.response.to.have.status(400);\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Response is JSON\", function () {\r
+
+      \    pm.response.to.be.json;\r
+
+      });\r
+
+      \r
+
+      const response = pm.response.json();\r
+
+      \r
+
+      pm.test(\"Error type is Validation Failed\", function () {\r
+
+      \    pm.expect(response.error)\r
+
+      \        .to.eql(\"Validation Failed\");\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Name validation error exists\", function () {\r
+
+      \    pm.expect(response.errors.name)\r
+
+      \        .to.eql(\"Product name is required\");\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Price validation error exists\", function () {\r
+
+      \    pm.expect(response.errors.price)\r
+
+      \        .to.eql(\"Price is required\");\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Stock validation error exists\", function () {\r
+
+      \    pm.expect(response.errors.stockQuantity)\r
+
+      \        .to.eql(\"Stock cannot be negative\");\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Category validation error exists\", function () {\r
+
+      \    pm.expect(response.errors.category)\r
+
+      \        .to.eql(\"Category is required\");\r
+
+      });"
+    language: text/javascript
+order: 4476444393161739

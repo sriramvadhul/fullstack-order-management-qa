@@ -1,0 +1,84 @@
+$kind: http-request
+url: "{{baseUrl}}/api/products/{{productId}}"
+method: GET
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 200\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Response is JSON\", function () {\r
+
+      \    pm.response.to.be.json;\r
+
+      });\r
+
+      \r
+
+      const response = pm.response.json();\r
+
+      \r
+
+      pm.test(\"Product ID matches saved productId\", function () {\r
+
+      \    pm.expect(response.id.toString())\r
+
+      \        .to.eql(pm.environment.get(\"productId\").toString());\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Product name is correct\", function () {\r
+
+      \    pm.expect(response.name)\r
+
+      \        .to.eql(\"Postman Test Laptop\");\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Product price is correct\", function () {\r
+
+      \    pm.expect(response.price)\r
+
+      \        .to.eql(1299.99);\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Stock quantity is correct\", function () {\r
+
+      \    pm.expect(response.stockQuantity)\r
+
+      \        .to.eql(15);\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Product category is Electronics\", function () {\r
+
+      \    pm.expect(response.category)\r
+
+      \        .to.eql(\"Electronics\");\r
+
+      });\r
+
+      \r
+
+      pm.test(\"Product is active\", function () {\r
+
+      \    pm.expect(response.active)\r
+
+      \        .to.eql(true);\r
+
+      });"
+    language: text/javascript
+order: 3916631313610508
