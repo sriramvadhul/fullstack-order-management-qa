@@ -1,6 +1,7 @@
 package com.orderflow.backend.config;
 
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -10,6 +11,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
@@ -27,25 +34,39 @@ public class SecurityConfig {
             HttpSecurity http) throws Exception {
 
         http
+                // Allow requests from the React frontend
+                .cors(cors ->
+                        cors.configurationSource(
+                                corsConfigurationSource()
+                        )
+                )
+
+                // REST API uses JWT, so CSRF is disabled
                 .csrf(csrf -> csrf.disable())
 
+                // Do not create HTTP sessions
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
 
+                // Custom JSON responses for 401 and 403
                 .exceptionHandling(exception -> exception
 
-                        // No authentication / missing or invalid JWT
                         .authenticationEntryPoint(
-                                (request, response, authException) -> {
+                                (request,
+                                 response,
+                                 authException) -> {
+
                                     response.setStatus(
                                             HttpServletResponse.SC_UNAUTHORIZED
                                     );
+
                                     response.setContentType(
                                             "application/json"
                                     );
+
                                     response.getWriter().write(
                                             """
                                             {
@@ -58,15 +79,19 @@ public class SecurityConfig {
                                 }
                         )
 
-                        // Logged in but insufficient role
                         .accessDeniedHandler(
-                                (request, response, accessDeniedException) -> {
+                                (request,
+                                 response,
+                                 accessDeniedException) -> {
+
                                     response.setStatus(
                                             HttpServletResponse.SC_FORBIDDEN
                                     );
+
                                     response.setContentType(
                                             "application/json"
                                     );
+
                                     response.getWriter().write(
                                             """
                                             {
@@ -80,10 +105,13 @@ public class SecurityConfig {
                         )
                 )
 
+                // Authorization rules
                 .authorizeHttpRequests(auth -> auth
 
-                        // Public authentication endpoints
-                        .requestMatchers("/api/auth/**")
+                        // Registration and login are public
+                        .requestMatchers(
+                                "/api/auth/**"
+                        )
                         .permitAll()
 
                         // CUSTOMER and ADMIN can view products
@@ -91,31 +119,39 @@ public class SecurityConfig {
                                 HttpMethod.GET,
                                 "/api/products/**"
                         )
-                        .hasAnyRole("CUSTOMER", "ADMIN")
+                        .hasAnyRole(
+                                "CUSTOMER",
+                                "ADMIN"
+                        )
 
-                        // ADMIN only
+                        // Only ADMIN can create products
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/products/**"
                         )
                         .hasRole("ADMIN")
 
+                        // Only ADMIN can update products
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/products/**"
                         )
                         .hasRole("ADMIN")
 
+                        // Only ADMIN can delete products
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/products/**"
                         )
                         .hasRole("ADMIN")
 
+                        // Everything else requires authentication
                         .anyRequest()
                         .authenticated()
                 )
 
+                // Check JWT before Spring Security's normal
+                // username/password authentication filter
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
@@ -126,6 +162,47 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration configuration =
+                new CorsConfiguration();
+
+        // React development server
+        configuration.setAllowedOrigins(
+                List.of(
+                        "http://localhost:5173"
+                )
+        );
+
+        configuration.setAllowedMethods(
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "OPTIONS"
+                )
+        );
+
+        configuration.setAllowedHeaders(
+                List.of("*")
+        );
+
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration(
+                "/**",
+                configuration
+        );
+
+        return source;
     }
 }
