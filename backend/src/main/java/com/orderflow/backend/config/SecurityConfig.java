@@ -21,140 +21,168 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter
+            jwtAuthenticationFilter;
 
     public SecurityConfig(
-            JwtAuthenticationFilter jwtAuthenticationFilter) {
+            JwtAuthenticationFilter
+                    jwtAuthenticationFilter) {
 
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.jwtAuthenticationFilter =
+                jwtAuthenticationFilter;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http) throws Exception {
+            HttpSecurity http)
+            throws Exception {
 
         http
-                // Allow requests from the React frontend
                 .cors(cors ->
                         cors.configurationSource(
                                 corsConfigurationSource()
                         )
                 )
 
-                // REST API uses JWT, so CSRF is disabled
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf ->
+                        csrf.disable()
+                )
 
-                // Do not create HTTP sessions
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
+                                SessionCreationPolicy
+                                        .STATELESS
                         )
                 )
 
-                // Custom JSON responses for 401 and 403
-                .exceptionHandling(exception -> exception
+                .exceptionHandling(exception ->
+                        exception
 
-                        .authenticationEntryPoint(
-                                (request,
-                                 response,
-                                 authException) -> {
+                                .authenticationEntryPoint(
+                                        (
+                                                request,
+                                                response,
+                                                authException
+                                        ) -> {
 
-                                    response.setStatus(
-                                            HttpServletResponse.SC_UNAUTHORIZED
-                                    );
+                                            response.setStatus(
+                                                    HttpServletResponse
+                                                            .SC_UNAUTHORIZED
+                                            );
 
-                                    response.setContentType(
-                                            "application/json"
-                                    );
+                                            response.setContentType(
+                                                    "application/json"
+                                            );
 
-                                    response.getWriter().write(
-                                            """
-                                            {
-                                              "status": 401,
-                                              "error": "Unauthorized",
-                                              "message": "Authentication is required"
-                                            }
-                                            """
-                                    );
-                                }
-                        )
+                                            response
+                                                    .getWriter()
+                                                    .write(
+                                                            """
+                                                            {
+                                                              "status": 401,
+                                                              "error": "Unauthorized",
+                                                              "message": "Authentication is required"
+                                                            }
+                                                            """
+                                                    );
+                                        }
+                                )
 
-                        .accessDeniedHandler(
-                                (request,
-                                 response,
-                                 accessDeniedException) -> {
+                                .accessDeniedHandler(
+                                        (
+                                                request,
+                                                response,
+                                                accessDeniedException
+                                        ) -> {
 
-                                    response.setStatus(
-                                            HttpServletResponse.SC_FORBIDDEN
-                                    );
+                                            response.setStatus(
+                                                    HttpServletResponse
+                                                            .SC_FORBIDDEN
+                                            );
 
-                                    response.setContentType(
-                                            "application/json"
-                                    );
+                                            response.setContentType(
+                                                    "application/json"
+                                            );
 
-                                    response.getWriter().write(
-                                            """
-                                            {
-                                              "status": 403,
-                                              "error": "Forbidden",
-                                              "message": "You do not have permission to access this resource"
-                                            }
-                                            """
-                                    );
-                                }
-                        )
+                                            response
+                                                    .getWriter()
+                                                    .write(
+                                                            """
+                                                            {
+                                                              "status": 403,
+                                                              "error": "Forbidden",
+                                                              "message": "You do not have permission to access this resource"
+                                                            }
+                                                            """
+                                                    );
+                                        }
+                                )
                 )
 
-                // Authorization rules
-                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth ->
+                        auth
 
-                        // Registration and login are public
-                        .requestMatchers(
-                                "/api/auth/**"
-                        )
-                        .permitAll()
+                                // Public authentication APIs
+                                .requestMatchers(
+                                        "/api/auth/**"
+                                )
+                                .permitAll()
 
-                        // CUSTOMER and ADMIN can view products
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/products/**"
-                        )
-                        .hasAnyRole(
-                                "CUSTOMER",
-                                "ADMIN"
-                        )
+                                // ADMIN-only APIs
+                                .requestMatchers(
+                                        "/api/admin/**"
+                                )
+                                .hasRole("ADMIN")
 
-                        // Only ADMIN can create products
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/products/**"
-                        )
-                        .hasRole("ADMIN")
+                                // Cart
+                                .requestMatchers(
+                                        "/api/cart/**"
+                                )
+                                .hasAnyRole(
+                                        "CUSTOMER",
+                                        "ADMIN"
+                                )
 
-                        // Only ADMIN can update products
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/api/products/**"
-                        )
-                        .hasRole("ADMIN")
+                                // View products
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/products/**"
+                                )
+                                .hasAnyRole(
+                                        "CUSTOMER",
+                                        "ADMIN"
+                                )
 
-                        // Only ADMIN can delete products
-                        .requestMatchers(
-                                HttpMethod.DELETE,
-                                "/api/products/**"
-                        )
-                        .hasRole("ADMIN")
+                                // Create products
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/products/**"
+                                )
+                                .hasRole("ADMIN")
 
-                        // Everything else requires authentication
-                        .anyRequest()
-                        .authenticated()
+                                // Update products
+                                .requestMatchers(
+                                        HttpMethod.PUT,
+                                        "/api/products/**"
+                                )
+                                .hasRole("ADMIN")
+
+                                // Delete products
+                                .requestMatchers(
+                                        HttpMethod.DELETE,
+                                        "/api/products/**"
+                                )
+                                .hasRole("ADMIN")
+
+                                // Everything else
+                                .anyRequest()
+                                .authenticated()
                 )
 
-                // Check JWT before Spring Security's normal
-                // username/password authentication filter
                 .addFilterBefore(
                         jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class
+                        UsernamePasswordAuthenticationFilter
+                                .class
                 );
 
         return http.build();
@@ -167,12 +195,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource
+    corsConfigurationSource() {
 
         CorsConfiguration configuration =
                 new CorsConfiguration();
 
-        // React development server
         configuration.setAllowedOrigins(
                 List.of(
                         "http://localhost:5173"
@@ -193,7 +221,9 @@ public class SecurityConfig {
                 List.of("*")
         );
 
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(
+                true
+        );
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
