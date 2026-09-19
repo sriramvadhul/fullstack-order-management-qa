@@ -6,8 +6,8 @@ services:
 
     environment:
       POSTGRES_DB: orderflow
-      POSTGRES_USER: orderflow
-      POSTGRES_PASSWORD: orderflow123
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
     ports:
       - "5433:5432"
