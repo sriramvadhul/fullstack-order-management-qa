@@ -1,88 +1,33 @@
-\# OrderFlow
+# OrderFlow
 
+## Overview
 
+## Architecture
 
-Full Stack Order Management \& QA Automation Platform.
+## Tech Stack
 
+## Features
 
+## Project Structure
 
-\## Tech Stack
+## Prerequisites
 
+## Running the Application
 
+## Running Backend Tests
 
-\### Frontend
+## Running API Tests
 
-\- React
+## Running UI Tests
 
-\- TypeScript
+## Running Performance Tests
 
+## CI/CD
 
+## Test Results
 
-\### Backend
+## API Documentation
 
-\- Java
+## Known Limitations
 
-\- Spring Boot
-
-\- REST APIs
-
-
-
-\### Database
-
-\- PostgreSQL
-
-
-
-\### Testing
-
-\- JUnit 5
-
-\- Mockito
-
-\- Selenium WebDriver
-
-\- Postman
-
-\- Newman
-
-\- Testcontainers
-
-\- JMeter
-
-
-
-\### DevOps
-
-\- Docker
-
-\- GitHub Actions
-
-
-
-\## Features
-
-
-
-\- User registration and login
-
-\- Product management
-
-\- Shopping cart
-
-\- Order processing
-
-\- Inventory management
-
-\- Admin dashboard
-
-\- Automated API testing
-
-\- Automated UI testing
-
-\- Integration testing
-
-\- Performance testing
-
-\- CI/CD regression pipeline
-
+## Future Improvements
